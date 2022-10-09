@@ -1,0 +1,15 @@
+.placeholder {
+    position: absolute;
+    top: 0;
+    right: 0;
+    bottom: 0;
+    left: 0;
+    display: flex;
+    align-items: center;
+    color: #4056E1;
+
+    .icon-loading {
+        margin-right: 4px;
+        font-size: 24px;
+    }
+}

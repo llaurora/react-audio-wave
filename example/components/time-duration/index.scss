@@ -1,0 +1,16 @@
+.audio-time {
+    display: flex;
+    align-items: center;
+
+    .current-time {
+        width: 68px;
+    }
+
+    .divider {
+        margin: 0 2px;
+    }
+
+    .total-time {
+        width: 68px;
+    }
+}

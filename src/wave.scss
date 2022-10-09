@@ -1,0 +1,50 @@
+.wave-container {
+    position: relative;
+    box-sizing: border-box;
+    overflow: hidden;
+
+    .wave-container-loading-state {
+        background-color: transparent;
+    }
+
+    .channel {
+        position: relative;
+        z-index: 1;
+
+        .progress {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 2;
+            transform: translateZ(0);
+        }
+
+        canvas {
+            position: relative;
+            z-index: 3;
+            float: left;
+            margin: 0;
+            padding: 0;
+        }
+
+        .progress-cursor {
+            position: absolute;
+            top: 0;
+            bottom: 0;
+            left: 0;
+            z-index: 4;
+            width: 1px;
+        }
+    }
+
+    .error-container {
+        display: flex;
+        align-items: center;
+        height: 100%;
+
+        .wave-error-text {
+            color: #ff4d4f;
+        }
+    }
+}
