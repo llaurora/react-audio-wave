@@ -90,13 +90,19 @@ const AudioWave = ({
     const peakData: PeakData = useMemo(() => {
         if (width && loadState === LoadStateEnum.SUCCESS) {
             // 加载成功以保障拿到了audiobuffer
-            console.log(width, "fff");
             return webAudioRef.current.getWebaudioPeaks(width, mono);
         }
         return initPeakData;
     }, [loadState, mono, width]);
 
-    console.log(peakData, "peakData");
+    const onAudioError = useCallback(
+        (error: Error) => {
+            loadedErrorRef.current = error;
+            setLoadState(LoadStateEnum.ERROR);
+            onChangeLoadState?.(LoadStateEnum.ERROR);
+        },
+        [onChangeLoadState],
+    );
 
     // 加载音频资源
     const requestAudioFile = useCallback(async () => {
@@ -106,12 +112,16 @@ const AudioWave = ({
             const request = await fetchFile(audioSrc);
             // 音频加载成功
             request.on("success", (data) => {
-                webAudioRef.current.initWebAudio(data, (duration: number) => {
-                    // 音频解码完成
-                    loadedErrorRef.current = null;
-                    setLoadState(LoadStateEnum.SUCCESS);
-                    onChangeLoadState?.(LoadStateEnum.SUCCESS, duration);
-                });
+                webAudioRef.current.initWebAudio(
+                    data,
+                    (duration: number) => {
+                        // 音频解码完成
+                        loadedErrorRef.current = null;
+                        setLoadState(LoadStateEnum.SUCCESS);
+                        onChangeLoadState?.(LoadStateEnum.SUCCESS, duration);
+                    },
+                    onAudioError, // 音频解码失败
+                );
             });
             // 音频加载进度
             request.on("progress", (loadedState) => {
@@ -121,17 +131,11 @@ const AudioWave = ({
                 loadedPercentRef.current.changeLoadedPercent(formatPercent(loadedState.loaded / loadedState.total));
             });
             // 音频加载失败
-            request.on("error", (error) => {
-                loadedErrorRef.current = error;
-                setLoadState(LoadStateEnum.ERROR);
-                onChangeLoadState?.(LoadStateEnum.ERROR);
-            });
+            request.on("error", onAudioError);
         } catch (error) {
-            loadedErrorRef.current = error;
-            setLoadState(LoadStateEnum.ERROR);
-            onChangeLoadState?.(LoadStateEnum.ERROR);
+            onAudioError(error);
         }
-    }, [audioSrc, onChangeLoadState]);
+    }, [audioSrc, onAudioError, onChangeLoadState]);
 
     // 计算实时进度
     const calcRealTimeProgress = useCallback(() => {
