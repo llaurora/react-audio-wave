@@ -11,6 +11,7 @@ import type { PeakData, Peaks } from "./helpers";
 import "./wave.scss";
 
 export enum LoadStateEnum {
+    "EMPTY" = -1,
     "INIT" = 0,
     "LOADING" = 1,
     "SUCCESS" = 2,
@@ -112,6 +113,10 @@ const AudioWave = ({
             const request = await fetchFile(audioSrc);
             // 音频加载成功
             request.on("success", (data) => {
+                if (data.byteLength === 0) {
+                    setLoadState(LoadStateEnum.EMPTY);
+                    return;
+                }
                 webAudioRef.current.initWebAudio(
                     data,
                     (duration: number) => {
@@ -301,6 +306,9 @@ const AudioWave = ({
     }, [audioSrc]);
 
     const renderContent = () => {
+        if (loadState === LoadStateEnum.EMPTY) {
+            return <span>无音频内容</span>;
+        }
         if (loadState === LoadStateEnum.LOADING) {
             return (
                 <Placeholder>
