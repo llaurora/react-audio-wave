@@ -3,7 +3,7 @@
     "version": "1.0.0",
     "private": true,
     "description": "audio wave",
-    "main": "src/index.ts",
+    "main": "src/index.tsx",
     "license": "MIT",
     "repository": {
         "type": "git",

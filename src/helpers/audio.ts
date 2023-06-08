@@ -70,12 +70,20 @@ export default class WebAudio {
         this.pixelRatio = Math.max(1, Math.floor(window.devicePixelRatio)); // 有些设备是0
     }
 
-    public initWebAudio(audioData: ArrayBuffer, successCallback: (duration?: number) => void): void {
-        this.audioContext.decodeAudioData(audioData, (decodeData: AudioBuffer) => {
-            this.buffer = decodeData;
-            this.duration = decodeData.duration;
-            successCallback(this.duration);
-        });
+    public initWebAudio(
+        audioData: ArrayBuffer,
+        successCallback: (duration?: number) => void,
+        errorCallback?: (error: Error) => void,
+    ): void {
+        try {
+            this.audioContext.decodeAudioData(audioData, (decodeData: AudioBuffer) => {
+                this.buffer = decodeData;
+                this.duration = decodeData.duration;
+                successCallback(this.duration);
+            });
+        } catch (error) {
+            errorCallback?.(error);
+        }
     }
 
     public initAudioElement(audioSrc: string, container: HTMLDivElement): void {
