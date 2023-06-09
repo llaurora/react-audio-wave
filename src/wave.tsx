@@ -21,7 +21,8 @@ export enum LoadStateEnum {
 interface Wavecolors {
     progressColor: string;
     waveColor: string;
-    waveBackground: string;
+    cursorColor?: string;
+    waveBackground?: string;
 }
 
 interface AudioWaveProps {
@@ -30,10 +31,12 @@ interface AudioWaveProps {
     audioSrc: string;
     obsever: EventEmitter;
     placeholder: any;
+    barGap?: number;
+    barWidth?: number;
     progressStyle?: CSSProperties;
     supportPlaybackRate?: boolean;
     mono?: boolean;
-    progressCursor?: boolean;
+    progressCursorVisible?: boolean;
     cursorTimeConfig?: CursorTimeConfig;
     className?: string;
     errorContainerClassName?: string;
@@ -50,8 +53,6 @@ interface CurrentPosition {
     right: number;
 }
 
-const initPeakData = { length: 0, data: [], bits: 8 };
-
 const AudioWave = ({
     audioSrc,
     waveHeight,
@@ -67,8 +68,10 @@ const AudioWave = ({
     children,
     onWaveSizeChange,
     placeholder: Placeholder,
+    barGap = 0,
+    barWidth = 1,
     mono = true,
-    progressCursor = true,
+    progressCursorVisible = true,
     supportPlaybackRate = false,
 }: PropsWithChildren<AudioWaveProps>) => {
     const [loadState, setLoadState] = useState<LoadStateEnum>(LoadStateEnum.INIT);
@@ -86,15 +89,7 @@ const AudioWave = ({
     if (!webAudioRef.current) {
         webAudioRef.current = new WebAudio(supportPlaybackRate);
     }
-    const { progressColor, waveBackground, waveColor } = colors;
-
-    const peakData: PeakData = useMemo(() => {
-        if (width && loadState === LoadStateEnum.SUCCESS) {
-            // 加载成功以保障拿到了audiobuffer
-            return webAudioRef.current.getWebaudioPeaks(width, mono);
-        }
-        return initPeakData;
-    }, [loadState, mono, width]);
+    const { progressColor, waveColor, cursorColor, waveBackground = "transparent" } = colors;
 
     const onAudioError = useCallback(
         (error: Error) => {
@@ -305,6 +300,61 @@ const AudioWave = ({
         webAudioRef.current.initAudioElement(audioSrc, containerRef.current);
     }, [audioSrc]);
 
+    const waveNode: PeakData = useMemo(() => {
+        if (width && loadState === LoadStateEnum.SUCCESS) {
+            // 加载成功以保障拿到了audiobuffer
+            const peakData = webAudioRef.current.getWebaudioPeaks(width, mono);
+            return peakData.data.map((data: Peaks, index: number) => {
+                const canvasWidth = peakData?.length ?? width;
+                const waveCanvasProps = {
+                    pixelRatio: webAudioRef.current.pixelRatio,
+                    color: waveColor,
+                    peaks: data,
+                    bits: peakData.bits,
+                    width: canvasWidth,
+                    height: waveHeight,
+                    className: "wave-canvas",
+                    barGap,
+                    barWidth,
+                };
+                return (
+                    <div
+                        key={index}
+                        className="channel"
+                        style={{ height: waveHeight, width: canvasWidth, backgroundColor: waveBackground }}
+                    >
+                        <WaveProgress
+                            ref={waveProgressRef}
+                            progressStyle={progressStyle}
+                            progressCursorVisible={progressCursorVisible}
+                            progressColor={progressColor}
+                            cursorColor={cursorColor}
+                            className="progress"
+                        >
+                            <WaveCanvas {...waveCanvasProps} color={progressColor} />
+                        </WaveProgress>
+                        <CursorTime ref={cursorTimeRef} config={cursorTimeConfig} />
+                        <WaveCanvas {...waveCanvasProps} />
+                    </div>
+                );
+            });
+        }
+    }, [
+        barGap,
+        barWidth,
+        cursorColor,
+        cursorTimeConfig,
+        loadState,
+        mono,
+        progressColor,
+        progressCursorVisible,
+        progressStyle,
+        waveBackground,
+        waveColor,
+        waveHeight,
+        width,
+    ]);
+
     const renderContent = () => {
         if (loadState === LoadStateEnum.EMPTY) {
             return <span>无音频内容</span>;
@@ -330,36 +380,7 @@ const AudioWave = ({
         return (
             <>
                 {children}
-                {peakData.data.map((data: Peaks, index: number) => {
-                    const canvasWidth = peakData?.length ?? width;
-                    return (
-                        <div
-                            key={index}
-                            className="channel"
-                            style={{ height: waveHeight, width: canvasWidth, backgroundColor: waveColor }}
-                        >
-                            <WaveProgress
-                                ref={waveProgressRef}
-                                progressStyle={progressStyle}
-                                progressCursor={progressCursor}
-                                progressColor={progressColor}
-                                progressClassName="progress"
-                                progressCursorClassName="progress-cursor"
-                            />
-                            <CursorTime ref={cursorTimeRef} config={cursorTimeConfig} />
-                            <WaveCanvas
-                                pixelRatio={webAudioRef.current.pixelRatio}
-                                color={waveBackground}
-                                peaks={data}
-                                bits={peakData.bits}
-                                width={canvasWidth}
-                                height={waveHeight}
-                                barGap={0}
-                                barWidth={1}
-                            />
-                        </div>
-                    );
-                })}
+                {waveNode}
             </>
         );
     };

@@ -1,4 +1,5 @@
 import { memo, useRef, useEffect } from "react";
+import classNames from "classnames";
 import { Peaks, Bits } from "@/helpers/webaudioPeaks";
 
 interface WaveCanvasProps {
@@ -10,6 +11,7 @@ interface WaveCanvasProps {
     barGap: number;
     barWidth: number;
     pixelRatio: number;
+    className?: string;
     offset?: number;
 }
 
@@ -21,6 +23,7 @@ const WaveCanvas = ({
     bits,
     barGap,
     barWidth,
+    className,
     pixelRatio: scale,
     offset = 0,
 }: WaveCanvasProps) => {
@@ -29,7 +32,8 @@ const WaveCanvas = ({
     useEffect(() => {
         const len = width / scale;
         const ctx = canvasRef.current.getContext("2d");
-        const h2 = height / scale / 2;
+        const h = height / scale;
+        const h2 = h / 2;
         const maxValue = 2 ** (bits - 1);
         const barStart = barWidth + barGap;
         ctx.clearRect(0, 0, width, height);
@@ -43,20 +47,13 @@ const WaveCanvas = ({
             const maxPeak = peaks[(pixel + offset) * 2 + 1] / maxValue;
             const min = Math.abs(minPeak * h2);
             const max = Math.abs(maxPeak * h2);
-            // draw max
-            ctx.fillRect(pixel, 0, barWidth, h2 - max);
-            // draw min
-            ctx.fillRect(pixel, h2 + min, barWidth, h2 - min);
-            // draw gap
-            if (barGap !== 0) {
-                ctx.fillRect(pixel + barWidth, 0, barGap, h2 * 2);
-            }
+            ctx.fillRect(pixel, h2 - max, barWidth, max + min);
         }
         ctx.restore();
     }, [barGap, barWidth, bits, color, height, offset, peaks, scale, width]);
 
     return (
-        <canvas width={width} height={height} ref={canvasRef}>
+        <canvas width={width} height={height} ref={canvasRef} className={classNames(className)}>
             Your browser does not support HTML5 canvas.
         </canvas>
     );

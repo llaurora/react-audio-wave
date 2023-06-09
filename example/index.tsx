@@ -14,6 +14,7 @@ const colors = {
     waveColor: "#d8d8d8",
     waveBackground: "#f7f7f7",
     progressColor: "#4056e1",
+    cursorColor: "#4056e1",
 };
 const cursorTimeConfig = {
     zIndex: 4,

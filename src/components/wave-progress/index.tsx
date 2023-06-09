@@ -1,17 +1,18 @@
-import { memo, useState, forwardRef, useImperativeHandle, CSSProperties } from "react";
+import { memo, useState, forwardRef, useImperativeHandle, CSSProperties, ReactElement } from "react";
 import classNames from "classnames";
 
 interface WaveProgressProps {
-    progressCursor: boolean;
     progressColor: string;
-    progressClassName?: string;
-    progressCursorClassName?: string;
+    children: ReactElement;
+    className?: string;
+    progressCursorVisible?: boolean;
+    cursorColor?: string;
     progressStyle?: CSSProperties;
 }
 
 const WaveProgress = forwardRef(
     (
-        { progressCursor, progressClassName, progressColor, progressCursorClassName, progressStyle }: WaveProgressProps,
+        { className, progressColor, progressStyle, children, cursorColor, progressCursorVisible }: WaveProgressProps,
         ref,
     ) => {
         const [offsetPixels, setOffsetPixels] = useState<number>(0);
@@ -25,18 +26,16 @@ const WaveProgress = forwardRef(
         }));
 
         return (
-            <>
-                <div
-                    className={classNames({ [progressClassName]: !!progressClassName })}
-                    style={{ ...progressStyle, backgroundColor: progressColor, width: offsetPixels }}
-                />
-                {progressCursor ? (
-                    <div
-                        className={classNames({ [progressCursorClassName]: !!progressCursorClassName })}
-                        style={{ backgroundColor: progressColor, transform: `translateX(${offsetPixels}px)` }}
-                    />
-                ) : null}
-            </>
+            <div
+                className={classNames(className)}
+                style={{
+                    ...progressStyle,
+                    width: offsetPixels,
+                    borderRight: progressCursorVisible ? `1px solid ${cursorColor || progressColor}` : "none",
+                }}
+            >
+                {children}
+            </div>
         );
     },
 );
