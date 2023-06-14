@@ -1,4 +1,5 @@
-import { useState, useLayoutEffect, MutableRefObject } from "react";
+import type { MutableRefObject } from "react";
+import { useState, useLayoutEffect } from "react";
 import ResizeObserver from "resize-observer-polyfill";
 
 export type Size = { width: number; height: number };

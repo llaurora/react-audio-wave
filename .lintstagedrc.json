@@ -1,8 +1,8 @@
 {
-    "{src, example}/**/*.{ts,tsx,js}": [
-        "eslint --fix"
+    "src/**/*.{ts,tsx,js}": [
+        "eslint -c .eslintrc.js --fix"
     ],
-    "{src, example}/**/*.{css,scss,sass}": [
-        "stylelint --fix"
+    "src/**/*.{css,scss,sass}": [
+        "stylelint -c .stylelintrc.js --fix"
     ]
 }

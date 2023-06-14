@@ -12,6 +12,7 @@ export default function fetchFile(url: string, options?: FetchRequestInit) {
     }
     let total = 0;
     let loaded = 0;
+    // eslint-disable-next-line unicorn/prefer-event-target
     const instance: any = new EventEmitter();
     const fetchHeaders = new Headers();
     const fetchRequest = new Request(url);
@@ -115,17 +116,22 @@ export default function fetchFile(url: string, options?: FetchRequestInit) {
             let errMsg;
             if (response.ok) {
                 switch (responseType) {
-                    case "arraybuffer":
+                    case "arraybuffer": {
                         return response.arrayBuffer();
-                    case "json":
+                    }
+                    case "json": {
                         return response.json();
-                    case "blob":
+                    }
+                    case "blob": {
                         return response.blob();
-                    case "text":
+                    }
+                    case "text": {
                         return response.text();
-                    default:
+                    }
+                    default: {
                         errMsg = `Unknown responseType: ${responseType}`;
                         break;
+                    }
                 }
             }
             if (!errMsg) {

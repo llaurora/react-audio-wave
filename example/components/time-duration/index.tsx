@@ -1,6 +1,7 @@
-import { memo, useState, useImperativeHandle, forwardRef, PropsWithChildren } from "react";
+import type { PropsWithChildren } from "react";
+import { memo, useState, useImperativeHandle, forwardRef } from "react";
 import classNames from "classnames";
-import { timeformat } from "@/utils";
+import { timeFormat } from "../../../src";
 import "./index.scss";
 
 const initTime = "00:00:00.0";
@@ -15,10 +16,10 @@ const TimeDuration = forwardRef(({ className }: PropsWithChildren<TimeDurationPr
 
     useImperativeHandle(ref, () => ({
         changeCurrentTime: (current: number) => {
-            setCurrentTime(() => timeformat(current, "hh:mm:ss.u"));
+            setCurrentTime(() => timeFormat(current, "hh:mm:ss.u"));
         },
         changeTotalTime: (duration: number) => {
-            setTotalTime(() => timeformat(duration, "hh:mm:ss.u"));
+            setTotalTime(() => timeFormat(duration, "hh:mm:ss.u"));
         },
     }));
 

@@ -1,7 +1,9 @@
-import { ChangeEvent, useCallback, useRef, useState } from "react";
-import ReactDOM from "react-dom";
+import type { ChangeEvent } from "react";
+import { useCallback, useRef, useState } from "react";
+import ReactDOM from "react-dom/client";
 import classNames from "classnames";
-import AudioWave, { EventEmitter, LoadStateEnum, timeformat } from "../src";
+import AudioWave, { EventEmitter, LoadStateEnum, timeFormat } from "../src";
+import type { LoadStateEnumType } from "../src";
 import TimeDuration from "./components/time-duration";
 import Placeholder from "./components/placeholder";
 import VolumeSlider from "./components/volume-slider";
@@ -26,7 +28,7 @@ const cursorTimeConfig = {
         fontSize: "10px",
     },
     formatTimeCallback(cursorTime) {
-        return timeformat(cursorTime, "hh:mm:ss.u");
+        return timeFormat(cursorTime, "hh:mm:ss.u");
     },
 };
 
@@ -37,16 +39,17 @@ const downloadAudio = () => {
 const AudioPlayer = () => {
     const [paused, setPaused] = useState<boolean>(true);
     const [playbackRate, setPlaybackRate] = useState<string>("1.0");
-    const [loadState, setLoadState] = useState<LoadStateEnum>(LoadStateEnum.INIT);
+    const [loadState, setLoadState] = useState<LoadStateEnumType>(LoadStateEnum.INIT);
     const obseverRef = useRef<EventEmitter>(null);
     const durationRef = useRef<number>(null);
     const timeDurationRef = useRef(null);
 
     if (!obseverRef.current) {
+        // eslint-disable-next-line unicorn/prefer-event-target
         obseverRef.current = new EventEmitter();
     }
 
-    const onChangeLoadState = useCallback((state: LoadStateEnum, duration: number) => {
+    const onChangeLoadState = useCallback((state: LoadStateEnumType, duration: number) => {
         setLoadState(state);
         if (state === LoadStateEnum.SUCCESS) {
             durationRef.current = duration;
@@ -124,4 +127,5 @@ const AudioPlayer = () => {
     );
 };
 
-ReactDOM.render(<AudioPlayer />, document.querySelector("#root"));
+const root = ReactDOM.createRoot(document.querySelector("#root"));
+root.render(<AudioPlayer />);

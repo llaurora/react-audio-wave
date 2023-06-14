@@ -1,12 +1,9 @@
 .placeholder {
     position: absolute;
-    top: 0;
-    right: 0;
-    bottom: 0;
-    left: 0;
+    inset: 0;
     display: flex;
     align-items: center;
-    color: #4056E1;
+    color: #4056e1;
 
     .icon-loading {
         margin-right: 4px;

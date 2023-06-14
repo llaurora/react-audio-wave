@@ -1,4 +1,5 @@
-import { memo, useState, forwardRef, useImperativeHandle, CSSProperties, ReactElement } from "react";
+import type { CSSProperties, ReactElement } from "react";
+import { memo, useState, forwardRef, useImperativeHandle } from "react";
 import classNames from "classnames";
 
 interface WaveProgressProps {

@@ -1,13 +1,15 @@
-import { memo, useRef, useCallback, useEffect, useState, useMemo, CSSProperties, PropsWithChildren } from "react";
+import type { CSSProperties, PropsWithChildren, ReactElement } from "react";
+import { memo, useRef, useCallback, useEffect, useState, useMemo } from "react";
 import classNames from "classnames";
-import useSize, { Size } from "./useSize";
+import type { Size } from "./useSize";
+import useSize from "./useSize";
 import WaveCanvas from "./components/wave-canvas";
 import WaveProgress from "./components/wave-progress";
 import LoadedPercent from "./components/loaded-percent";
-import CursorTime, { CursorTimeConfig } from "./components/cursor-time";
-import { formatPercent } from "./utils";
-import { WebAudio, fetchFile, EventEmitter } from "./helpers";
-import type { PeakData, Peaks } from "./helpers";
+import type { CursorTimeConfig } from "./components/cursor-time";
+import CursorTime from "./components/cursor-time";
+import { WebAudio, fetchFile, formatPercent } from "./helpers";
+import type { EventEmitter, PeakData, Peaks } from "./helpers";
 import "./wave.scss";
 
 export enum LoadStateEnum {
@@ -18,19 +20,20 @@ export enum LoadStateEnum {
     "ERROR" = 3,
 }
 
-interface Wavecolors {
+export interface Wavecolors {
     progressColor: string;
     waveColor: string;
     cursorColor?: string;
     waveBackground?: string;
 }
 
-interface AudioWaveProps {
+export interface AudioWaveProps {
     waveHeight: number;
     colors: Wavecolors;
     audioSrc: string;
     obsever: EventEmitter;
-    placeholder: any;
+    placeholder: PropsWithChildren<any>;
+    emptyElement?: ReactElement;
     barGap?: number;
     barWidth?: number;
     progressStyle?: CSSProperties;
@@ -39,11 +42,11 @@ interface AudioWaveProps {
     progressCursorVisible?: boolean;
     cursorTimeConfig?: CursorTimeConfig;
     className?: string;
-    errorContainerClassName?: string;
     onChangeLoadState?: (state: LoadStateEnum, duration?: number) => void;
     onCurrentTimeChange?: (current: number) => void;
     onWaveSizeChange?: (size: Size) => void;
     onPlayEnded?: () => void;
+    renderErrorElement?: (error?: string) => ReactElement;
 }
 
 interface CurrentPosition {
@@ -52,6 +55,14 @@ interface CurrentPosition {
     clientX: number;
     right: number;
 }
+
+const renderErrorElementFunc = (error?: string) => {
+    return (
+        <div className="error-container">
+            <span className="wave-error-text">Decoding failed: {error}</span>
+        </div>
+    );
+};
 
 const AudioWave = ({
     audioSrc,
@@ -64,7 +75,6 @@ const AudioWave = ({
     onPlayEnded,
     cursorTimeConfig,
     className,
-    errorContainerClassName,
     children,
     onWaveSizeChange,
     placeholder: Placeholder,
@@ -73,6 +83,8 @@ const AudioWave = ({
     mono = true,
     progressCursorVisible = true,
     supportPlaybackRate = false,
+    emptyElement = <span>no audio content</span>,
+    renderErrorElement = renderErrorElementFunc,
 }: PropsWithChildren<AudioWaveProps>) => {
     const [loadState, setLoadState] = useState<LoadStateEnum>(LoadStateEnum.INIT);
     const webAudioRef = useRef<any>(null);
@@ -110,6 +122,7 @@ const AudioWave = ({
             request.on("success", (data) => {
                 if (data.byteLength === 0) {
                     setLoadState(LoadStateEnum.EMPTY);
+                    onChangeLoadState?.(LoadStateEnum.EMPTY);
                     return;
                 }
                 webAudioRef.current.initWebAudio(
@@ -233,6 +246,14 @@ const AudioWave = ({
         webAudioRef.current.changePlaybackRate(playbackRate);
     }, []);
 
+    const destroy = useCallback(() => {
+        if (webAudioRef.current.playing) {
+            pauseAudio();
+        }
+        webAudioRef.current = null;
+        setLoadState(LoadStateEnum.INIT);
+    }, [pauseAudio]);
+
     // 根据鼠标点击的位置计算seek音频时间点
     const calcCurrentPosition = (event): CurrentPosition => {
         const containerRectInfo = containerRef.current.getBoundingClientRect();
@@ -282,15 +303,16 @@ const AudioWave = ({
         obsever.on("volume", changeVolume);
         obsever.on("playbackRate", changePlaybackRate);
         obsever.on("seekTo", seekTo);
+        obsever.on("destroy", destroy);
         return () => {
             obsever.off("play");
             obsever.off("pause");
             obsever.off("volume");
             obsever.off("playbackRate");
             obsever.off("seekTo");
-            obsever.off("playRangeTime");
+            obsever.off("destroy", destroy);
         };
-    }, [obsever, pauseAudio, changeVolume, playAudio, changePlaybackRate, seekTo]);
+    }, [obsever, pauseAudio, changeVolume, playAudio, changePlaybackRate, seekTo, destroy]);
 
     useEffect(() => {
         requestAudioFile();
@@ -300,10 +322,10 @@ const AudioWave = ({
         webAudioRef.current.initAudioElement(audioSrc, containerRef.current);
     }, [audioSrc]);
 
-    const waveNode: PeakData = useMemo(() => {
+    const waveNode = useMemo(() => {
         if (width && loadState === LoadStateEnum.SUCCESS) {
             // 加载成功以保障拿到了audiobuffer
-            const peakData = webAudioRef.current.getWebaudioPeaks(width, mono);
+            const peakData: PeakData = webAudioRef.current.getWebaudioPeaks(width, mono);
             return peakData.data.map((data: Peaks, index: number) => {
                 const canvasWidth = peakData?.length ?? width;
                 const waveCanvasProps = {
@@ -357,7 +379,7 @@ const AudioWave = ({
 
     const renderContent = () => {
         if (loadState === LoadStateEnum.EMPTY) {
-            return <span>无音频内容</span>;
+            return emptyElement;
         }
         if (loadState === LoadStateEnum.LOADING) {
             return (
@@ -367,15 +389,7 @@ const AudioWave = ({
             );
         }
         if (loadState === LoadStateEnum.ERROR) {
-            return (
-                <div
-                    className={classNames("error-container", {
-                        [errorContainerClassName]: !!errorContainerClassName,
-                    })}
-                >
-                    <span className="wave-error-text">解码失败 {loadedErrorRef.current?.toString()}</span>
-                </div>
-            );
+            return renderErrorElement?.(loadedErrorRef.current?.toString());
         }
         return (
             <>
@@ -388,10 +402,9 @@ const AudioWave = ({
     return (
         <div
             className={classNames("wave-container", {
-                "wave-container-loading-state": loadState === LoadStateEnum.LOADING,
                 [className]: !!className,
             })}
-            style={{ minHeight: waveHeight }}
+            style={{ height: waveHeight }}
             ref={containerRef}
             onMouseMove={onMouseMove}
             onMouseLeave={onMouseleave}

@@ -128,7 +128,7 @@ export function webaudioPeaks(
     const numChan = (source as AudioBuffer).numberOfChannels;
     let peaks = [];
 
-    if (typeof (source as Float32Array).subarray === "undefined") {
+    if ((source as Float32Array).subarray === undefined) {
         for (let c = 0; c < numChan; c += 1) {
             const channel = (source as AudioBuffer).getChannelData(c);
             const slice = channel.subarray(formatCueIn, formatCueOut);

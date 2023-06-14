@@ -1,9 +1,7 @@
 const path = require("path");
-const HtmlWebpackPlugin = require("html-webpack-plugin");
-const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 require("dotenv").config();
 
-const devMode = process.env.NODE_ENV === "development";
+const DEV_MODE = process.env.NODE_ENV === "development";
 const ROOT_DIR = path.resolve(__dirname, "..");
 const resolve = (...args) => path.resolve(ROOT_DIR, ...args);
 const SRC_DIR = resolve("src");
@@ -31,7 +29,7 @@ module.exports = {
                 loader: "babel-loader",
                 include: [SRC_DIR, EXAMPLE_DIR],
                 options: {
-                    plugins: [devMode && require.resolve("react-refresh/babel")].filter(Boolean),
+                    plugins: [DEV_MODE && require.resolve("react-refresh/babel")].filter(Boolean),
                 },
             },
             {
@@ -39,7 +37,7 @@ module.exports = {
                 include: [SRC_DIR, EXAMPLE_DIR],
                 type: "asset",
                 generator: {
-                    filename: devMode ? "[name][ext]" : "images/[hash][ext][query]",
+                    filename: DEV_MODE ? "[name][ext]" : "images/[hash][ext][query]",
                 },
                 parser: {
                     dataUrlCondition: {
@@ -52,7 +50,7 @@ module.exports = {
                 include: [SRC_DIR, EXAMPLE_DIR],
                 type: "asset/resource",
                 generator: {
-                    filename: devMode ? "[name][ext]" : "fonts/[hash][ext][query]",
+                    filename: DEV_MODE ? "[name][ext]" : "fonts/[hash][ext][query]",
                 },
             },
             {
@@ -60,21 +58,14 @@ module.exports = {
                 include: [SRC_DIR, EXAMPLE_DIR],
                 type: "asset/resource",
                 generator: {
-                    filename: devMode ? "[name][ext]" : "audio/[hash][ext][query]",
+                    filename: DEV_MODE ? "[name][ext]" : "audio/[hash][ext][query]",
                 },
             },
             {
                 test: /\.(sa|sc|c)ss$/,
                 include: [SRC_DIR, EXAMPLE_DIR],
                 use: [
-                    devMode
-                        ? "style-loader"
-                        : {
-                              loader: MiniCssExtractPlugin.loader,
-                              options: {
-                                  publicPath: "../",
-                              },
-                          },
+                    "style-loader",
                     {
                         loader: "css-loader",
                         options: {
@@ -94,13 +85,4 @@ module.exports = {
             },
         ],
     },
-    plugins: [
-        new HtmlWebpackPlugin({
-            title: "react-audio-wave",
-            filename: "index.html",
-            template: path.resolve(process.cwd(), "./public/template.html"), // template path
-            favicon: path.resolve(process.cwd(), "./public/favicon.ico"),
-            inject: true,
-        }),
-    ],
 };

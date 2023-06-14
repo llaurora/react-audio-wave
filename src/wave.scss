@@ -3,10 +3,6 @@
     box-sizing: border-box;
     overflow: hidden;
 
-    .wave-container-loading-state {
-        background-color: transparent;
-    }
-
     .channel {
         position: relative;
         z-index: 1;
@@ -26,14 +22,14 @@
             padding: 0;
         }
     }
+}
 
-    .error-container {
-        display: flex;
-        align-items: center;
-        height: 100%;
+.error-container {
+    display: flex;
+    align-items: center;
+    height: 100%;
 
-        .wave-error-text {
-            color: #ff4d4f;
-        }
+    .wave-error-text {
+        color: #ff4d4f;
     }
 }

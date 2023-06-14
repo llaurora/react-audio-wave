@@ -1,4 +1,4 @@
-type EventHandler = (...args: any[]) => void;
+export type EventHandler = (...args: any[]) => void;
 
 export default class EventEmitter {
     #emiter = new Map<string, EventHandler[]>();

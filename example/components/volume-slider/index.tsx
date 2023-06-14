@@ -1,6 +1,7 @@
-import { memo, useRef, useState, ChangeEvent } from "react";
+import type { ChangeEvent } from "react";
+import { memo, useRef, useState } from "react";
 import classNames from "classnames";
-import { EventEmitter } from "../../../src";
+import type { EventEmitter } from "../../../src";
 import "./index.scss";
 
 interface VolumeSliderProps {
@@ -32,18 +33,18 @@ const VolumeSlider = ({ obsever, className }: VolumeSliderProps) => {
 
     return (
         <div className={classNames("volume-slider", { [className]: !!className })}>
-            {sliderValue !== 0 ? (
-                <span
-                    className={classNames("iconfont icon-shengyin", "icon-switch-volume")}
-                    onClick={() => {
-                        changeSlider(0);
-                    }}
-                />
-            ) : (
+            {sliderValue === 0 ? (
                 <span
                     className={classNames("iconfont icon-jingyin", "icon-switch-volume")}
                     onClick={() => {
                         changeSlider(sliderValueRef.current);
+                    }}
+                />
+            ) : (
+                <span
+                    className={classNames("iconfont icon-shengyin", "icon-switch-volume")}
+                    onClick={() => {
+                        changeSlider(0);
                     }}
                 />
             )}

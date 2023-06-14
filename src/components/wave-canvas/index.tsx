@@ -1,6 +1,6 @@
 import { memo, useRef, useEffect } from "react";
 import classNames from "classnames";
-import { Peaks, Bits } from "@/helpers/webaudioPeaks";
+import type { Peaks, Bits } from "@/helpers";
 
 interface WaveCanvasProps {
     width: number;

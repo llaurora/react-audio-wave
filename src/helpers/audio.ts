@@ -1,5 +1,6 @@
-import { pixelsToSeconds, secondsToPixels } from "@/utils";
-import { PeakData, webaudioPeaks } from "./webaudioPeaks";
+import { pixelsToSeconds, secondsToPixels } from "./utils";
+import type { PeakData } from "./webaudioPeaks";
+import { webaudioPeaks } from "./webaudioPeaks";
 
 export default class WebAudio {
     private audioContext: AudioContext;

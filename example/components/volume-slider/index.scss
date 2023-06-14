@@ -1,14 +1,14 @@
 .volume-slider {
     position: relative;
 
+    .slider {
+        visibility: hidden;
+    }
+
     &:hover {
         .slider {
             visibility: visible;
         }
-    }
-
-    .slider {
-        visibility: hidden;
     }
 
     .icon-switch-volume {
