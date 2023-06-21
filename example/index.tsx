@@ -2,7 +2,11 @@ import type { ChangeEvent } from "react";
 import { useCallback, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import classNames from "classnames";
-import AudioWave, { EventEmitter, LoadStateEnum, timeFormat } from "../src";
+// 本地开发调试时用的下面路径
+// import { EventEmitter, LoadStateEnum, timeFormat, ReactAudioWave } from "../src";
+// import type { LoadStateEnumType } from "../src";
+// 1、本地跑example可用软链接；2、在实际项目中使用的时候直接安装react-audio-wave包引入使用
+import { EventEmitter, LoadStateEnum, timeFormat, ReactAudioWave } from "../src";
 import type { LoadStateEnumType } from "../src";
 import TimeDuration from "./components/time-duration";
 import Placeholder from "./components/placeholder";
@@ -110,7 +114,7 @@ const AudioPlayer = () => {
                     <VolumeSlider obsever={obseverRef.current} className="volume-slider" />
                 </div>
             ) : null}
-            <AudioWave
+            <ReactAudioWave
                 supportPlaybackRate
                 className="audio-wave-container"
                 obsever={obseverRef.current}

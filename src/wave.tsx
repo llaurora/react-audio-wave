@@ -27,7 +27,7 @@ export interface Wavecolors {
     waveBackground?: string;
 }
 
-export interface AudioWaveProps {
+export interface ReactAudioWaveProps {
     waveHeight: number;
     colors: Wavecolors;
     audioSrc: string;
@@ -64,7 +64,7 @@ const renderErrorElementFunc = (error?: string) => {
     );
 };
 
-const AudioWave = ({
+const ReactAudioWave = ({
     audioSrc,
     waveHeight,
     colors,
@@ -85,7 +85,7 @@ const AudioWave = ({
     supportPlaybackRate = false,
     emptyElement = <span>no audio content</span>,
     renderErrorElement = renderErrorElementFunc,
-}: PropsWithChildren<AudioWaveProps>) => {
+}: PropsWithChildren<ReactAudioWaveProps>) => {
     const [loadState, setLoadState] = useState<LoadStateEnum>(LoadStateEnum.INIT);
     const webAudioRef = useRef<any>(null);
     const containerRef = useRef<HTMLDivElement>(null);
@@ -416,4 +416,4 @@ const AudioWave = ({
     );
 };
 
-export default memo(AudioWave);
+export default memo(ReactAudioWave);

@@ -1,6 +1,15 @@
+import extractPeaks from "webaudio-peaks";
 import { pixelsToSeconds, secondsToPixels } from "./utils";
-import type { PeakData } from "./webaudioPeaks";
-import { webaudioPeaks } from "./webaudioPeaks";
+
+export type Peaks = Int8Array | Int16Array | Int32Array;
+
+export type Bits = 8 | 16 | 32;
+
+export type PeakData = {
+    length: number;
+    data: Peaks[];
+    bits: Bits;
+};
 
 export default class WebAudio {
     private audioContext: AudioContext;
@@ -108,7 +117,7 @@ export default class WebAudio {
         }
         this.samplesPerPixel = Math.floor(this.buffer.length / width);
         // 根据设定的canvas的宽度，计算峰值采样率，每px能代表多少buffer，原则上讲最后得到的peakData的length和设定的canvas的宽度是一样的
-        this.peakData = webaudioPeaks(this.buffer, this.samplesPerPixel, mono);
+        this.peakData = extractPeaks(this.buffer, this.samplesPerPixel, mono);
         return this.peakData;
     }
 

@@ -1,6 +1,6 @@
 import type { CSSProperties } from "react";
 import { memo, forwardRef, useImperativeHandle, useState, useRef } from "react";
-import useSize from "@/useSize";
+import useSize from "../../useSize";
 import "./index.scss";
 
 export interface CursorTimeConfig {
