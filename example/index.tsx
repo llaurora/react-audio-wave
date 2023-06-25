@@ -3,14 +3,17 @@ import { useCallback, useRef, useState } from "react";
 import ReactDOM from "react-dom/client";
 import classNames from "classnames";
 // 本地开发调试时用的下面路径
-// import { EventEmitter, LoadStateEnum, timeFormat, ReactAudioWave } from "../src";
-// import type { LoadStateEnumType } from "../src";
+// import { LoadStateEnum, ReactAudioWave } from "../src";
+// import type { LoadStateEnumType, InstanceMethodType } from "../src";
 // 1、本地跑example可用软链接；2、在实际项目中使用的时候直接安装react-audio-wave包引入使用
-import { EventEmitter, LoadStateEnum, timeFormat, ReactAudioWave } from "../src";
-import type { LoadStateEnumType } from "../src";
+import { LoadStateEnum, ReactAudioWave } from "../src";
+import type { LoadStateEnumType, InstanceMethodType } from "../src";
 import TimeDuration from "./components/time-duration";
 import Placeholder from "./components/placeholder";
 import VolumeSlider from "./components/volume-slider";
+import { timeFormat as timeFormatFunc } from "./utils";
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
 import audioSrc from "./qifengle.mp3";
 import "./index.scss";
 import "./iconfont/iconfont.scss";
@@ -18,22 +21,8 @@ import "./iconfont/iconfont.scss";
 const waveHeight = 60;
 const colors = {
     waveColor: "#d8d8d8",
-    waveBackground: "#f7f7f7",
-    progressColor: "#4056e1",
-    cursorColor: "#4056e1",
-};
-const cursorTimeConfig = {
-    zIndex: 4,
-    opacity: 1,
-    customShowTimeStyle: {
-        backgroundColor: "#4056e1",
-        color: "#fff",
-        padding: "2px",
-        fontSize: "10px",
-    },
-    formatTimeCallback(cursorTime) {
-        return timeFormat(cursorTime, "hh:mm:ss.u");
-    },
+    progressColor: "#8E128E",
+    cursorColor: "#8E128E",
 };
 
 const downloadAudio = () => {
@@ -44,20 +33,14 @@ const AudioPlayer = () => {
     const [paused, setPaused] = useState<boolean>(true);
     const [playbackRate, setPlaybackRate] = useState<string>("1.0");
     const [loadState, setLoadState] = useState<LoadStateEnumType>(LoadStateEnum.INIT);
-    const obseverRef = useRef<EventEmitter>(null);
+    const audioWaveRef = useRef<InstanceMethodType>(null);
     const durationRef = useRef<number>(null);
     const timeDurationRef = useRef(null);
-
-    if (!obseverRef.current) {
-        // eslint-disable-next-line unicorn/prefer-event-target
-        obseverRef.current = new EventEmitter();
-    }
 
     const onChangeLoadState = useCallback((state: LoadStateEnumType, duration: number) => {
         setLoadState(state);
         if (state === LoadStateEnum.SUCCESS) {
             durationRef.current = duration;
-            timeDurationRef.current?.changeTotalTime(duration);
         }
     }, []);
 
@@ -69,18 +52,26 @@ const AudioPlayer = () => {
         timeDurationRef.current?.changeCurrentTime(current);
     }, []);
 
+    const onChangeVolume = useCallback((volume: number) => {
+        audioWaveRef.current?.volume(volume);
+    }, []);
+
+    const timeFormat = useCallback((seconds: number) => {
+        return timeFormatFunc(seconds, "hh:mm:ss.u");
+    }, []);
+
     const changePlaybackRate = (rate) => {
         setPlaybackRate(rate);
-        obseverRef.current.emit("playbackRate", Number(rate));
+        audioWaveRef.current?.playbackRate(Number(rate));
     };
 
     const playPause = () => {
         setPaused((bool: boolean) => !bool);
         if (paused) {
-            obseverRef.current.emit("play");
+            audioWaveRef.current?.play();
             return;
         }
-        obseverRef.current.emit("pause");
+        audioWaveRef.current?.pause();
     };
 
     return (
@@ -94,7 +85,7 @@ const AudioPlayer = () => {
                             "icon-play": paused,
                         })}
                     />
-                    <TimeDuration ref={timeDurationRef} className="audio-time" />
+                    <TimeDuration ref={timeDurationRef} className="audio-time" duration={durationRef.current} />
                     <span
                         className={classNames("iconfont icon-circledownload", "icon-download")}
                         onClick={downloadAudio}
@@ -111,20 +102,20 @@ const AudioPlayer = () => {
                         <option value="1.5">playbackRate 1.5</option>
                         <option value="2.0">playbackRate 2.0</option>
                     </select>
-                    <VolumeSlider obsever={obseverRef.current} className="volume-slider" />
+                    <VolumeSlider onChangeVolume={onChangeVolume} className="volume-slider" />
                 </div>
             ) : null}
             <ReactAudioWave
                 supportPlaybackRate
                 className="audio-wave-container"
-                obsever={obseverRef.current}
+                ref={audioWaveRef}
                 waveHeight={waveHeight}
                 colors={colors}
-                cursorTimeConfig={cursorTimeConfig}
                 audioSrc={audioSrc}
                 onChangeLoadState={onChangeLoadState}
                 onCurrentTimeChange={onCurrentTimeChange}
                 onPlayEnded={onPlayEnded}
+                timeFormat={timeFormat}
                 placeholder={Placeholder}
             />
         </div>

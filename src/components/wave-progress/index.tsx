@@ -1,4 +1,4 @@
-import type { CSSProperties, ReactElement } from "react";
+import type { CSSProperties, ReactElement, ForwardedRef } from "react";
 import { memo, useState, forwardRef, useImperativeHandle } from "react";
 import classNames from "classnames";
 
@@ -11,15 +11,19 @@ interface WaveProgressProps {
     progressStyle?: CSSProperties;
 }
 
+export interface WaveProgressInstanceMethodType {
+    changeOffsetPixels?: (currentPixels: number) => void;
+}
+
 const WaveProgress = forwardRef(
     (
         { className, progressColor, progressStyle, children, cursorColor, progressCursorVisible }: WaveProgressProps,
-        ref,
+        ref: ForwardedRef<WaveProgressInstanceMethodType>,
     ) => {
         const [offsetPixels, setOffsetPixels] = useState<number>(0);
 
         useImperativeHandle(ref, () => ({
-            changeOffsetPixels: (currentPixels) => {
+            changeOffsetPixels: (currentPixels: number) => {
                 if (currentPixels !== undefined) {
                     setOffsetPixels(currentPixels);
                 }

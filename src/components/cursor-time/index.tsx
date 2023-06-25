@@ -1,76 +1,93 @@
-import type { CSSProperties } from "react";
+import type { CSSProperties, ForwardedRef } from "react";
 import { memo, forwardRef, useImperativeHandle, useState, useRef } from "react";
 import useSize from "../../useSize";
 import "./index.scss";
 
 export interface CursorTimeConfig {
     zIndex?: number;
-    formatTimeCallback?: (cursorTime: number) => string;
     customShowTimeStyle?: CSSProperties;
 }
 
 export interface CursorTimeProps {
-    config: CursorTimeConfig;
+    config?: CursorTimeConfig;
+    cursorColor?: string;
+    cursorVisible?: boolean;
+    timeFormat?: (seconds: number) => string;
 }
 
-const CursorTime = forwardRef(({ config }: CursorTimeProps, ref) => {
-    const { zIndex = 4, customShowTimeStyle = {}, formatTimeCallback } = config || {};
-    const { backgroundColor, color, padding, fontSize } = customShowTimeStyle;
+export interface CursorTimeMethodType {
+    updateCursorPosition?: (timeValue: number, x: number, clientX: number, right: number) => void;
+    hideCursor?: () => void;
+    showCursor?: () => void;
+}
 
-    const [left, setLeft] = useState<number>(0);
-    const [opacity, setOpacity] = useState<number>(0);
-    const [flip, setFlip] = useState<boolean>(false);
-    const [cursorTime, setCursorTime] = useState<string>("00:00:00");
-    const timeContentRef = useRef<HTMLDivElement>(null);
-    const { width: timeContentWidth } = useSize(timeContentRef);
+const CursorTime = forwardRef(
+    ({ config, cursorColor, cursorVisible, timeFormat }: CursorTimeProps, ref: ForwardedRef<CursorTimeMethodType>) => {
+        const { zIndex = 4, customShowTimeStyle } = config || {};
+        const {
+            backgroundColor = cursorColor,
+            color = "#fff",
+            padding = "2px",
+            fontSize = "10px",
+            ...restStyles
+        } = customShowTimeStyle || {};
 
-    useImperativeHandle(ref, () => ({
-        updateCursorPosition: (timeValue: number, x: number, clientX: number, right: number) => {
-            const formatValue = formatTimeCallback?.(timeValue);
-            setCursorTime(formatValue);
-            setOpacity(1);
-            setFlip(right < clientX + timeContentWidth);
-            setLeft(x);
-        },
-        hideCursor: () => {
-            setOpacity(0);
-        },
-        showCursor: () => {
-            setOpacity(1);
-        },
-    }));
+        const [left, setLeft] = useState<number>(0);
+        const [opacity, setOpacity] = useState<number>(0);
+        const [flip, setFlip] = useState<boolean>(false);
+        const [cursorTime, setCursorTime] = useState<string>(() => timeFormat?.(0) || "00:00:00");
+        const timeContentRef = useRef<HTMLDivElement>(null);
+        const { width: timeContentWidth } = useSize(timeContentRef);
 
-    if (!config) {
-        return null;
-    }
+        useImperativeHandle(ref, () => ({
+            updateCursorPosition: (timeValue: number, x: number, clientX: number, right: number) => {
+                const formatValue = timeFormat?.(timeValue);
+                setCursorTime(formatValue);
+                setOpacity(1);
+                setFlip(right < clientX + timeContentWidth);
+                setLeft(x);
+            },
+            hideCursor: () => {
+                setOpacity(0);
+            },
+            showCursor: () => {
+                setOpacity(1);
+            },
+        }));
 
-    return (
-        <div
-            className="cursor-time"
-            style={{
-                opacity,
-                zIndex,
-                left,
-                borderLeftStyle: "solid",
-                borderLeftWidth: 1,
-                borderLeftColor: backgroundColor,
-            }}
-        >
+        if (!cursorVisible) {
+            return null;
+        }
+
+        return (
             <div
-                ref={timeContentRef}
-                className="time"
+                className="cursor-time"
                 style={{
-                    backgroundColor,
-                    color,
-                    padding,
-                    fontSize,
-                    marginLeft: flip ? -timeContentWidth : 0,
+                    opacity,
+                    zIndex,
+                    left,
+                    borderLeftStyle: "solid",
+                    borderLeftWidth: 1,
+                    borderLeftColor: backgroundColor,
                 }}
             >
-                {cursorTime}
+                <div
+                    ref={timeContentRef}
+                    className="time"
+                    style={{
+                        backgroundColor,
+                        color,
+                        padding,
+                        fontSize,
+                        marginLeft: flip ? -timeContentWidth : 0,
+                        ...restStyles,
+                    }}
+                >
+                    {cursorTime}
+                </div>
             </div>
-        </div>
-    );
-});
+        );
+    },
+);
 
 export default memo(CursorTime);

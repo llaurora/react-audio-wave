@@ -1,8 +1,7 @@
 {
     "name": "react-audio-wave",
     "version": "1.0.0",
-    "private": true,
-    "description": "audio wave",
+    "description": "visualize a waveform of an audio file",
     "main": "dist/react-audio-wave.cjs.js",
     "module": "dist/react-audio-wave.esm.js",
     "typings": "dist/react-audio-wave.d.ts",
@@ -15,6 +14,13 @@
         "LICENSE",
         "README.md",
         "dist/"
+    ],
+    "keywords": [
+        "react",
+        "react-component",
+        "wave",
+        "waveform",
+        "audio"
     ],
     "scripts": {
         "start:vite": "vite",

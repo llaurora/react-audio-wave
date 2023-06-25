@@ -1,12 +1,11 @@
 import type { ChangeEvent } from "react";
 import { memo, useRef, useState } from "react";
 import classNames from "classnames";
-import type { EventEmitter } from "../../../src";
 import "./index.scss";
 
 interface VolumeSliderProps {
+    onChangeVolume: (volume: number) => void;
     className?: string;
-    obsever: EventEmitter;
 }
 
 const fixedNumber = (num: number, fixed = 2): number => {
@@ -19,13 +18,13 @@ const fixedNumber = (num: number, fixed = 2): number => {
     return Number(num.toFixed(fixed));
 };
 
-const VolumeSlider = ({ obsever, className }: VolumeSliderProps) => {
+const VolumeSlider = ({ onChangeVolume, className }: VolumeSliderProps) => {
     const [sliderValue, setSliderValue] = useState<number>(100);
     const sliderValueRef = useRef<number>(sliderValue);
 
     const changeSlider = (val: number, needCache?: boolean) => {
         setSliderValue(val);
-        obsever.emit("volume", fixedNumber(val / 100));
+        onChangeVolume?.(fixedNumber(val / 100));
         if (needCache) {
             sliderValueRef.current = sliderValue;
         }
