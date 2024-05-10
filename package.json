@@ -1,6 +1,6 @@
 {
     "name": "react-audio-wave",
-    "version": "1.0.0",
+    "version": "1.1.0",
     "description": "visualize a waveform of an audio file",
     "main": "dist/react-audio-wave.cjs.js",
     "module": "dist/react-audio-wave.esm.js",
@@ -37,7 +37,9 @@
         "prepare": "husky install"
     },
     "dependencies": {
-        "@babel/runtime-corejs3": "^7.22.5"
+        "@babel/runtime-corejs3": "^7.24.5",
+        "resize-observer-polyfill": "^1.5.1",
+        "webaudio-peaks": "^1.0.0"
     },
     "devDependencies": {
         "@babel/core": "^7.19.3",
@@ -57,7 +59,6 @@
         "@typescript-eslint/eslint-plugin": "^5.39.0",
         "@typescript-eslint/parser": "^5.39.0",
         "@vitejs/plugin-react-swc": "^3.3.2",
-        "classnames": "^2.3.2",
         "cssnano": "^6.0.1",
         "eslint": "^8.42.0",
         "eslint-config-airbnb": "^19.0.4",
@@ -77,9 +78,6 @@
         "postcss-preset-env": "^7.8.2",
         "postcss-scss": "^4.0.5",
         "prettier": "^2.7.1",
-        "react": "^18.2.0",
-        "react-dom": "^18.2.0",
-        "resize-observer-polyfill": "^1.5.1",
         "rimraf": "^5.0.1",
         "rollup": "^3.25.1",
         "rollup-plugin-postcss": "^4.0.2",
@@ -92,8 +90,12 @@
         "stylelint-prettier": "^3.0.0",
         "stylelint-scss": "^5.0.1",
         "typescript": "^4.8.4",
-        "vite": "^4.3.9",
-        "webaudio-peaks": "^1.0.0"
+        "vite": "^4.3.9"
+    },
+    "peerDependencies": {
+        "classnames": ">=2.5.1",
+        "react": ">=16.8.0",
+        "react-dom": ">=16.8.0"
     },
     "engines": {
         "node": ">= 10.13.0"

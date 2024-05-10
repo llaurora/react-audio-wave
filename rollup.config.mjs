@@ -9,7 +9,11 @@ import terser from "@rollup/plugin-terser";
 import { readFile } from "fs/promises";
 
 const pkg = JSON.parse(await readFile(new URL("./package.json", import.meta.url)));
+const pkgDependencies = Object.keys(pkg.dependencies || {});
+const pkgPeerDependencies = Object.keys(pkg.peerDependencies || {});
+const external = [...pkgDependencies, ...pkgPeerDependencies, /@babel\/runtime/, "react", "react-dom"];
 const extensions = ['.ts', '.tsx'];
+const input = 'src/index.ts';
 
 const postcssPlugins = [
     flexbugsFixes,
@@ -22,32 +26,48 @@ const postcssPlugins = [
     cssnano(),
 ];
 
-const babelOptions = {
-    exclude: "node_modules/**",
-    babelHelpers: "runtime",
-    extensions: [".ts", ".tsx", ".js"],
-    presets: [
-        "@babel/preset-typescript",
-        "@babel/preset-env",
-        [
+const getBabelOptions = ({ useESModules }) => {
+    // @rollup/plugin-babel 不会自动扫描读取babel的配置文件
+    return ({
+        exclude: '**/node_modules/**',
+        babelHelpers: "runtime",
+        extensions: [".ts", ".tsx", ".js"],
+        presets: [
+            "@babel/preset-typescript",
+            [
+                "@babel/preset-env",
+                {
+                    "modules": useESModules ? false : 'auto',
+                    "useBuiltIns": false
+                }
+            ],
             "@babel/preset-react",
-            {
-                runtime: "automatic",
-            },
         ],
-    ],
-    plugins: [
-        [
-            "@babel/plugin-transform-runtime",
-            {
-                corejs: {
-                    version: 3,
-                    proposals: true,
+        plugins: [
+            [
+                "@babel/plugin-transform-runtime",
+                {
+                    useESModules,
+                    corejs: {
+                        version: 3,
+                        proposals: true,
+                    },
                 },
-            },
+            ],
         ],
-    ],
+    })
 };
+
+const getPlugins = ({useESModules}) => {
+    return [
+        postcss({
+            plugins: postcssPlugins,
+        }),
+        commonjs(),
+        nodeResolve({extensions}),
+        babel(getBabelOptions({useESModules})),
+    ]
+}
 
 const globals = (id) => {
     if(id.startsWith("@babel/runtime-corejs")) {
@@ -60,44 +80,58 @@ const globals = (id) => {
     return id;
 }
 
-export default {
-    input: "src/index.ts",
-    output: [
-        {
+export default [
+    {
+        input,
+        external,
+        output: {
+            file: pkg.main,
+            format: "es",
+            exports: 'named',
+        },
+        plugins: getPlugins({useESModules: true}),
+    },
+    {
+        input,
+        external,
+        output: {
+            file: pkg.module,
+            format: "cjs",
+            exports: 'named',
+        },
+        plugins: getPlugins({useESModules: false}),
+    },
+    {
+        input,
+        external,
+        output: {
             globals,
             file: "dist/react-audio-wave.js",
             format: "umd",
             name: "ReactAudioWave",
         },
-        {
+        plugins: getPlugins({useESModules: false}),
+    },
+    {
+        input,
+        external,
+        output: {
             globals,
             file: "dist/react-audio-wave.iife.js",
             format: "iife",
             name: "ReactAudioWave",
         },
-        {
+        plugins: getPlugins({useESModules: false}),
+    },
+    {
+        input,
+        external,
+        output: {
             globals,
             file: "dist/react-audio-wave.min.js",
             format: "umd",
             name: "ReactAudioWave",
-            plugins: [terser()],
         },
-        {
-            file: pkg.main,
-            format: "cjs",
-        },
-        {
-            file: pkg.module,
-            format: "esm",
-        },
-    ],
-    external: [/@babel\/runtime/, "react", "react-dom"],
-    plugins: [
-        commonjs(),
-        nodeResolve({extensions}),
-        babel(babelOptions),
-        postcss({
-            plugins: postcssPlugins,
-        }),
-    ],
-};
+        plugins: [...getPlugins({useESModules: false}), terser()],
+    },
+]
